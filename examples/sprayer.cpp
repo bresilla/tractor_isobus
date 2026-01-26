@@ -17,9 +17,7 @@
 #include <vector>
 
 static std::atomic_bool running = true;
-static std::atomic<std::int32_t> auth_status = 0;
-
-static std::uint32_t just_val = 54;
+std::atomic<std::int32_t> auth_status = 0;
 
 void signal_handler(int) { running = false; }
 
@@ -131,7 +129,7 @@ class SectionControlImplementSimulator {
 
         constexpr std::array<std::uint8_t, 7> localizationData = {'e', 'n', 0x50, 0x00, 0x55, 0x55, 0xFF};
 
-        retVal &= poolToPopulate->add_device("Sprayerr", "1.2.0", "WAZZZAAAAAA", "SP1.2", localizationData,
+        retVal &= poolToPopulate->add_device("Sprayerr", "1.9.0", "WAZZZAAAAAA", "SP1.9", localizationData,
                                              std::vector<std::uint8_t>(), clientName.get_full_name());
         retVal &= poolToPopulate->add_device_element(
             "Sprayer", elementCounter, 0, isobus::task_controller_object::DeviceElementObject::Type::Device,
@@ -144,6 +142,16 @@ class SectionControlImplementSimulator {
             static_cast<std::uint8_t>(
                 isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::DeviceActualWorkState));
+        retVal &= poolToPopulate->add_device_process_data(
+            "Hashtag", static_cast<std::uint16_t>(65432),
+            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
+            static_cast<std::uint8_t>(
+                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
+                static_cast<std::uint8_t>(
+                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
+            static_cast<std::uint8_t>(
+                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
+            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::HashtagParameter));
         retVal &= poolToPopulate->add_device_process_data(
             "Request Default PD", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::RequestDefaultProcessData),
             isobus::NULL_OBJECT_ID, 0,
@@ -179,18 +187,6 @@ class SectionControlImplementSimulator {
         retVal &= poolToPopulate->add_device_property(
             "Type", 9, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ConnectorType), isobus::NULL_OBJECT_ID,
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ConnectorType));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Hashtag", static_cast<std::uint16_t>(65432),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::HashtagParameter));
         elementCounter++;
 
         retVal &= poolToPopulate->add_device_element(
@@ -447,7 +443,7 @@ class SectionControlImplementSimulator {
     static bool request_value_command_callback(std::uint16_t, std::uint16_t DDI, std::int32_t &value,
                                                void *parentPointer) {
         if (nullptr != parentPointer) {
-            std::cout << "DDI: " << DDI << "\n";
+            // std::cout << "DDI: " << DDI << "\n";
             auto sim = reinterpret_cast<SectionControlImplementSimulator *>(parentPointer);
             switch (DDI) {
             case static_cast<std::uint16_t>(isobus::DataDescriptionIndex::MaximumVolumeContent):
@@ -506,8 +502,10 @@ class SectionControlImplementSimulator {
                 // value = 1234; // Arbitrary test value. Should be Hashtag status value
                 // get the auth status
                 // value = auth_status.load();
-                value = (static_cast<std::uint32_t>(just_val));
-                std::cout << "Just val: " << just_val << "\n";
+                // value = (static_cast<std::uint32_t>(just_val));
+                value = 1234;
+                std::cout << "Just val: " << value << "\n";
+                break;
             }
             default:
                 value = 0;
