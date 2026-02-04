@@ -154,6 +154,7 @@ static void process_nmea_line(const std::string &line) {
 enum class HashtagDDOPObjectIDs : std::uint16_t {
     Device = 0,
     MainDeviceElement = 1,
+    RequestDefaultProcessData = 5,
     AuthResultPD = 10,
     DeviceTotalTime = 20,
     ActualWorkState = 21,
@@ -162,19 +163,16 @@ enum class HashtagDDOPObjectIDs : std::uint16_t {
     TimePresentation = 52
 };
 
-static constexpr std::uint16_t ELEMENT_NUMBER = 1;
-
-// Proprietary DDI range: 57344..65534
 static constexpr std::uint16_t DDI_AUTH_RESULT = 65432;
+static constexpr std::uint16_t MAIN_DEVICE_ELEMENT = 1;
 
 static bool request_value_command_callback(std::uint16_t elementNumber, std::uint16_t DDI, std::int32_t &value,
                                            void *) {
-    if (elementNumber != ELEMENT_NUMBER) {
-        value = 0;
-        return true;
-    }
-
     switch (DDI) {
+    case static_cast<std::uint16_t>(isobus::DataDescriptionIndex::RequestDefaultProcessData):
+        // Always return 0 for request default process data
+        value = 0;
+        break;
     case DDI_AUTH_RESULT:
         // Report current hashtag authentication result from NMEA data
         value = gnss_auth_status.load();
@@ -195,17 +193,17 @@ static bool request_value_command_callback(std::uint16_t elementNumber, std::uin
     return true;
 }
 
-static bool default_process_data_requested_callback(short unsigned int elm, short unsigned int ddi,
-                                                    isobus::DefaultProcessDataSettings &returnedSettings, void *) {
-    returnedSettings.timeTriggerInterval_ms = 5500;
-    returnedSettings.changeThreshold = 0;
-    returnedSettings.enableTimeTrigger = true;
-    returnedSettings.enableChangeThresholdTrigger = true;
-    returnedSettings.enableMaximumWithinThresholdTrigger = false;
-    returnedSettings.enableMinimumWithinThresholdTrigger = false;
-    returnedSettings.enableDistanceTrigger = false;
-    return true;
-}
+// static bool default_process_data_requested_callback(short unsigned int elm, short unsigned int ddi,
+//                                                     isobus::DefaultProcessDataSettings &returnedSettings, void *) {
+//     returnedSettings.timeTriggerInterval_ms = 5500;
+//     returnedSettings.changeThreshold = 0;
+//     returnedSettings.enableTimeTrigger = true;
+//     returnedSettings.enableChangeThresholdTrigger = true;
+//     returnedSettings.enableMaximumWithinThresholdTrigger = false;
+//     returnedSettings.enableMinimumWithinThresholdTrigger = false;
+//     returnedSettings.enableDistanceTrigger = false;
+//     return true;
+// }
 
 static bool value_command_callback(std::uint16_t, std::uint16_t, std::int32_t, void *) { return true; }
 
@@ -220,7 +218,7 @@ static bool create_ddop(std::shared_ptr<isobus::DeviceDescriptorObjectPool> pool
 
     bool ok = true;
 
-    ok &= pool->add_device("HASHTAG", "0.0.13", "HASHTAG-SENSOR", "HTS0.0.13", localizationData,
+    ok &= pool->add_device("HAS#TAG", "1.3.25", "HASHTAG-SENSOR", "HTS0.0.13", localizationData,
                            std::vector<std::uint8_t>(), clientName.get_full_name());
 
     ok &= pool->add_device_element("WURDevice", 0, static_cast<std::uint16_t>(HashtagDDOPObjectIDs::Device),
@@ -236,19 +234,40 @@ static bool create_ddop(std::shared_ptr<isobus::DeviceDescriptorObjectPool> pool
     ok &= pool->add_device_value_presentation("raw", 0, 1.0f, 0,
                                               static_cast<std::uint16_t>(HashtagDDOPObjectIDs::RawPresentation));
 
-    ok &= pool->add_device_process_data("Hashtag DDI #1", DDI_AUTH_RESULT,
-                                        static_cast<std::uint16_t>(HashtagDDOPObjectIDs::RawPresentation),
-                                        static_cast<std::uint8_t>(3), static_cast<std::uint8_t>(9),
-                                        static_cast<std::uint16_t>(HashtagDDOPObjectIDs::AuthResultPD));
+    // Add Request Default Process Data first (required by most Task Controllers)
+    ok &= pool->add_device_process_data(
+        "Request Default Process Data",
+        static_cast<std::uint16_t>(isobus::DataDescriptionIndex::RequestDefaultProcessData), isobus::NULL_OBJECT_ID, 0,
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
+        static_cast<std::uint16_t>(HashtagDDOPObjectIDs::RequestDefaultProcessData));
+
+    ok &= pool->add_device_process_data(
+        "Hashtag DDI #1", DDI_AUTH_RESULT, static_cast<std::uint16_t>(HashtagDDOPObjectIDs::RawPresentation),
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
+            static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
+        static_cast<std::uint16_t>(HashtagDDOPObjectIDs::AuthResultPD));
 
     ok &= pool->add_device_process_data(
         "Actual Work State", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkState),
-        isobus::NULL_OBJECT_ID, static_cast<std::uint8_t>(1), static_cast<std::uint8_t>(8),
+        isobus::NULL_OBJECT_ID,
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
         static_cast<std::uint16_t>(HashtagDDOPObjectIDs::ActualWorkState));
 
     ok &= pool->add_device_process_data(
         "Total Time", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::EffectiveTotalTime),
-        isobus::NULL_OBJECT_ID, static_cast<std::uint8_t>(1), static_cast<std::uint8_t>(16),
+        isobus::NULL_OBJECT_ID,
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
+            static_cast<std::uint8_t>(isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
+        static_cast<std::uint8_t>(
+            isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
         static_cast<std::uint16_t>(HashtagDDOPObjectIDs::DeviceTotalTime));
 
     if (!ok) {
@@ -259,6 +278,8 @@ static bool create_ddop(std::shared_ptr<isobus::DeviceDescriptorObjectPool> pool
         pool->get_object_by_id(static_cast<std::uint16_t>(HashtagDDOPObjectIDs::MainDeviceElement)));
 
     if (mainElement) {
+        mainElement->add_reference_to_child_object(
+            static_cast<std::uint16_t>(HashtagDDOPObjectIDs::RequestDefaultProcessData));
         mainElement->add_reference_to_child_object(static_cast<std::uint16_t>(HashtagDDOPObjectIDs::ActualWorkState));
         mainElement->add_reference_to_child_object(static_cast<std::uint16_t>(HashtagDDOPObjectIDs::AuthResultPD));
         mainElement->add_reference_to_child_object(static_cast<std::uint16_t>(HashtagDDOPObjectIDs::DeviceTotalTime));
@@ -303,7 +324,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    auto canDriver = std::make_shared<isobus::SocketCANInterface>("can0");
+    auto canDriver = std::make_shared<isobus::SocketCANInterface>("vcan0");
     if (!canDriver) {
         std::cerr << "No CAN driver\n";
         return 2;
@@ -353,9 +374,9 @@ int main(int argc, char **argv) {
     tcClient->add_request_value_callback(request_value_command_callback, nullptr);
     tcClient->add_value_command_callback(value_command_callback, nullptr);
 
-    tcClient->configure(ddop, 0, 0, 0,
+    tcClient->configure(ddop, 1, 1, 1,
                         true, // supports documentation (so TC can log you)
-                        false, false, false, true);
+                        false, true, false, true);
 
     tcClient->initialize(true);
     std::cout << "TC Client started\n";
@@ -390,7 +411,7 @@ int main(int argc, char **argv) {
         auto w = gnss_warning.load();
 
         if (a != lastAuth) {
-            tcClient->on_value_changed_trigger(ELEMENT_NUMBER, DDI_AUTH_RESULT);
+            tcClient->on_value_changed_trigger(MAIN_DEVICE_ELEMENT, DDI_AUTH_RESULT);
             lastAuth = a;
         }
 

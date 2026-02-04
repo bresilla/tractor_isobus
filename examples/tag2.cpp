@@ -205,7 +205,7 @@ static bool create_ddop(std::shared_ptr<isobus::DeviceDescriptorObjectPool> pool
 
     bool ok = true;
 
-    ok &= pool->add_device("HASHTAG", "0.0.12", "HASHTAG-SENSOR", "HTS0.0.12", localizationData,
+    ok &= pool->add_device("HASHTAG", "0.4.12", "HASHTAG-SENSOR", "HTS0.0.12", localizationData,
                            std::vector<std::uint8_t>(), clientName.get_full_name());
 
     ok &= pool->add_device_element("WURDevice", 0, static_cast<std::uint16_t>(HashtagDDOPObjectIDs::Device),
