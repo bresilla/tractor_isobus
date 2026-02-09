@@ -63,13 +63,8 @@ class SectionControlImplementSimulator {
         PrescriptionControlState,
         ActualCulturalPractice,
         TargetRate,
-        //ActualRate,
-        AreaPresentation,
         TimePresentation,
         ShortWidthPresentation,
-        LongWidthPresentation,
-        VolumePresentation,
-        VolumePerAreaPresentation,
         HashtagParameter
     };
 
@@ -193,15 +188,7 @@ class SectionControlImplementSimulator {
         retVal &= poolToPopulate->add_device_value_presentation(
             "mm", 0, 1.0f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation));
         retVal &= poolToPopulate->add_device_value_presentation(
-            "m", 0, 0.001f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation));
-        retVal &= poolToPopulate->add_device_value_presentation(
-            "m^2", 0, 1.0f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::AreaPresentation));
-        retVal &= poolToPopulate->add_device_value_presentation(
-            "L", 0, 0.001f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePresentation));
-        retVal &= poolToPopulate->add_device_value_presentation(
             "minutes", 0, 1.0f, 1, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TimePresentation));
-        retVal &= poolToPopulate->add_device_value_presentation(
-            "L/ha", 0, 0.001f, 1, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePerAreaPresentation));
 
         if (retVal) {
             auto sprayer = std::static_pointer_cast<isobus::task_controller_object::DeviceElementObject>(
