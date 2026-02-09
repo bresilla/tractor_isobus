@@ -203,151 +203,17 @@ class SectionControlImplementSimulator {
             "Offset Z", 0, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetZ),
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::BoomZOffset));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Actual Working Width", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkingWidth),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualWorkingWidth));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Setpoint Work State", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SetpointWorkState),
-            isobus::NULL_OBJECT_ID,
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SetpointWorkState));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Area Total", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::TotalArea),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::AreaPresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::AreaTotal));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Section Control State", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SectionControlState),
-            isobus::NULL_OBJECT_ID,
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SectionControlState));
         elementCounter++;
 
         retVal &= poolToPopulate->add_device_element("Product", elementCounter,
                                                      static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SprayBoom),
                                                      isobus::task_controller_object::DeviceElementObject::Type::Bin,
                                                      static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LiquidProduct));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Tank Capacity", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::MaximumVolumeContent),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TankCapacity));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Tank Volume", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualVolumeContent),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TankVolume));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Lifetime Total Volume",
-            static_cast<std::uint16_t>(isobus::DataDescriptionIndex::LifetimeApplicationTotalVolume),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LifetimeApplicationVolumeTotal));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Rx Control State", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::PrescriptionControlState),
-            isobus::NULL_OBJECT_ID,
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::PrescriptionControlState));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Target Rate",
-            static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SetpointVolumePerAreaApplicationRate),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePerAreaPresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::TargetRate));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Actual Rate", static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualVolumePerAreaApplicationRate),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::VolumePerAreaPresentation),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::TimeInterval),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualRate));
         retVal &= poolToPopulate->add_device_property(
             "Operation Type", 3, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualCulturalPractice),
             isobus::NULL_OBJECT_ID, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualCulturalPractice));
         elementCounter++;
 
-        for (std::uint_fast8_t i = 0; i < get_number_of_sections(); i++) {
-            std::int32_t individualSectionWidth = BOOM_WIDTH / get_number_of_sections();
-            std::ostringstream ss;
-            ss << "Section " << static_cast<int>(i);
-            retVal &= poolToPopulate->add_device_element(
-                ss.str(), elementCounter, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SprayBoom),
-                isobus::task_controller_object::DeviceElementObject::Type::Section,
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1) + i);
-            retVal &= poolToPopulate->add_device_property(
-                "Offset X", -20, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetX),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1XOffset) + i);
-            retVal &= poolToPopulate->add_device_property(
-                "Offset Y", ((-BOOM_WIDTH) / 2) + (i * SECTION_WIDTH) + (SECTION_WIDTH / 2),
-                static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetY),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1YOffset) + i);
-            retVal &= poolToPopulate->add_device_property(
-                "Width", individualSectionWidth,
-                static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualWorkingWidth),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LongWidthPresentation),
-                static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1Width) + i);
-            auto section = std::static_pointer_cast<isobus::task_controller_object::DeviceElementObject>(
-                poolToPopulate->get_object_by_id(i + static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1)));
-            section->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1YOffset) +
-                                                   i);
-            section->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1XOffset) +
-                                                   i);
-            section->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::Section1Width) +
-                                                   i);
-            elementCounter++;
-        }
 
         // Add presentations
         retVal &= poolToPopulate->add_device_value_presentation(
