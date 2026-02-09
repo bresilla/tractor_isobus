@@ -188,35 +188,6 @@ class SectionControlImplementSimulator {
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ConnectorType));
         elementCounter++;
 
-        // Add child element Boom, and properties
-        retVal &= poolToPopulate->add_device_element(
-            "Boom", elementCounter, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::MainDeviceElement),
-            isobus::task_controller_object::DeviceElementObject::Type::Function,
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SprayBoom));
-        retVal &= poolToPopulate->add_device_property(
-            "Offset X", 0, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetX),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::BoomXOffset));
-        retVal &= poolToPopulate->add_device_property(
-            "Offset Y", 0, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetY),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::BoomYOffset));
-        retVal &= poolToPopulate->add_device_property(
-            "Offset Z", 0, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::DeviceElementOffsetZ),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::BoomZOffset));
-        elementCounter++;
-
-        // Add child element Product, and properties        
-        retVal &= poolToPopulate->add_device_element("Product", elementCounter,
-                                                     static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SprayBoom),
-                                                     isobus::task_controller_object::DeviceElementObject::Type::Bin,
-                                                     static_cast<std::uint16_t>(ImplementDDOPObjectIDs::LiquidProduct));
-        retVal &= poolToPopulate->add_device_property(
-            "Operation Type", 3, static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualCulturalPractice),
-            isobus::NULL_OBJECT_ID, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualCulturalPractice));
-        elementCounter++;
-
 
         // Add presentations
         retVal &= poolToPopulate->add_device_value_presentation(
