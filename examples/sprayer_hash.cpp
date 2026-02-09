@@ -349,28 +349,6 @@ class SectionControlImplementSimulator {
             elementCounter++;
         }
 
-        // Add condensed work state process data
-        retVal &= poolToPopulate->add_device_process_data(
-            "Actual Work State 1-16",
-            static_cast<std::uint16_t>(isobus::DataDescriptionIndex::ActualCondensedWorkState1_16),
-            isobus::NULL_OBJECT_ID,
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualCondensedWorkingState1To16));
-        retVal &= poolToPopulate->add_device_process_data(
-            "Setpoint Work State 1-16",
-            static_cast<std::uint16_t>(isobus::DataDescriptionIndex::SetpointCondensedWorkState1_16),
-            isobus::NULL_OBJECT_ID,
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::Settable) |
-                static_cast<std::uint8_t>(
-                    isobus::task_controller_object::DeviceProcessDataObject::PropertiesBit::MemberOfDefaultSet),
-            static_cast<std::uint8_t>(
-                isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::OnChange),
-            static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SetpointCondensedWorkingState1To16));
-
         // Add presentations
         retVal &= poolToPopulate->add_device_value_presentation(
             "mm", 0, 1.0f, 0, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ShortWidthPresentation));
@@ -436,7 +414,7 @@ class SectionControlImplementSimulator {
             product->add_reference_to_child_object(static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ActualRate));
         }
         return retVal;
-    }
+    } // End of create_ddop
 
     static bool request_value_command_callback(std::uint16_t, std::uint16_t DDI, std::int32_t &value,
                                                void *parentPointer) {
