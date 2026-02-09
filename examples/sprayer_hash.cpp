@@ -166,8 +166,9 @@ class SectionControlImplementSimulator {
             static_cast<std::uint8_t>(
                 isobus::task_controller_object::DeviceProcessDataObject::AvailableTriggerMethods::Total),
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::DeviceTotalTime));
-        elementCounter++;
+        elementCounter++; // Finished with main device element, increment to start adding child elements
 
+        // Add child element Connector, and properties
         retVal &= poolToPopulate->add_device_element(
             "Connector", elementCounter, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::MainDeviceElement),
             isobus::task_controller_object::DeviceElementObject::Type::Connector,
@@ -187,6 +188,7 @@ class SectionControlImplementSimulator {
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::ConnectorType));
         elementCounter++;
 
+        // Add child element Boom, and properties
         retVal &= poolToPopulate->add_device_element(
             "Boom", elementCounter, static_cast<std::uint16_t>(ImplementDDOPObjectIDs::MainDeviceElement),
             isobus::task_controller_object::DeviceElementObject::Type::Function,
@@ -205,6 +207,7 @@ class SectionControlImplementSimulator {
             static_cast<std::uint16_t>(ImplementDDOPObjectIDs::BoomZOffset));
         elementCounter++;
 
+        // Add child element Product, and properties        
         retVal &= poolToPopulate->add_device_element("Product", elementCounter,
                                                      static_cast<std::uint16_t>(ImplementDDOPObjectIDs::SprayBoom),
                                                      isobus::task_controller_object::DeviceElementObject::Type::Bin,
