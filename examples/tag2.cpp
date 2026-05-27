@@ -31,10 +31,14 @@ static void signal_handler(int) { running = false; }
 struct PHTGData {
     std::string date;
     std::string time;
-    std::string system;
-    std::string service;
-    int auth_result = 0;
-    int warning = 0;
+
+    // New PHTG fields:
+    // $PHTG,date,time,constellation,auth_system,service,status*CS
+    std::string constellation;
+    std::string auth_system;
+
+    int service = 0;
+    int status = 0;
 };
 
 bool export_ddop_to_xml(std::shared_ptr<isobus::DeviceDescriptorObjectPool> ddop, const std::string &filename) {
@@ -62,9 +66,43 @@ bool export_ddop_to_xml(std::shared_ptr<isobus::DeviceDescriptorObjectPool> ddop
     return true;
 }
 
-static bool validate_checksum(const std::string &sentence) {
+static std::string trim_line_endings(std::string value) {
+    while (!value.empty() && (value.back() == '\r' || value.back() == '\n')) {
+        value.pop_back();
+    }
+
+    return value;
+}
+
+static bool parse_int_field(const std::string &token, int &value) {
+    if (token.empty()) {
+        return false;
+    }
+
+    try {
+        size_t consumed = 0;
+        int parsed = std::stoi(token, &consumed, 10);
+
+        if (consumed != token.size()) {
+            return false;
+        }
+
+        value = parsed;
+        return true;
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+
+static bool validate_checksum(const std::string &raw_sentence) {
+    const auto sentence = trim_line_endings(raw_sentence);
+
     size_t star_pos = sentence.find('*');
     if (star_pos == std::string::npos || star_pos + 2 >= sentence.length()) {
+        return false;
+    }
+
+    if (sentence.empty() || sentence[0] != '$') {
         return false;
     }
 
@@ -74,19 +112,31 @@ static bool validate_checksum(const std::string &sentence) {
     }
 
     std::string cs_str = sentence.substr(star_pos + 1, 2);
-    int recv_cs = std::stoi(cs_str, nullptr, 16);
 
-    return calc_cs == recv_cs;
+    int recv_cs = 0;
+
+    try {
+        recv_cs = std::stoi(cs_str, nullptr, 16);
+    } catch (const std::exception &) {
+        return false;
+    }
+
+    return calc_cs == static_cast<std::uint8_t>(recv_cs);
 }
 
-static bool parse_phtg(const std::string &sentence, PHTGData &data) {
-    if (sentence.size() < 5) {
+static bool parse_phtg(const std::string &raw_sentence, PHTGData &data) {
+    const auto sentence = trim_line_endings(raw_sentence);
+
+    if (sentence.size() < 7) {
         return false;
     }
-    if (sentence.substr(0, 5) != "$PHTG") {
+
+    if (sentence.substr(0, 6) != "$PHTG,") {
         return false;
     }
+
     if (!validate_checksum(sentence)) {
+        std::cerr << "Invalid PHTG checksum: " << sentence << "\n";
         return false;
     }
 
@@ -95,47 +145,63 @@ static bool parse_phtg(const std::string &sentence, PHTGData &data) {
         return false;
     }
 
+    // Skip "$PHTG,"
     std::string body = sentence.substr(6, star_pos - 6);
 
     std::stringstream ss(body);
     std::string token;
-    int field = 0;
+    std::vector<std::string> fields;
 
     while (std::getline(ss, token, ',')) {
-        switch (field) {
-        case 0:
-            data.date = token;
-            break;
-        case 1:
-            data.time = token;
-            break;
-        case 2:
-            data.system = token;
-            break;
-        case 3:
-            data.service = token;
-            break;
-        case 4:
-            data.auth_result = token.empty() ? 0 : std::stoi(token);
-            break;
-        case 5:
-            data.warning = token.empty() ? 0 : std::stoi(token);
-            break;
-        default:
-            break;
-        }
-        field++;
+        fields.push_back(token);
     }
 
-    return field >= 6;
+    // Expected new format:
+    //
+    //   date,time,constellation,auth_system,service,status
+    //
+    // Example:
+    //
+    //   26:05:2026,12:21:13.00,GAL,HAS,0,0
+    if (fields.size() < 6) {
+        std::cerr << "Invalid PHTG field count: " << fields.size() << " sentence: " << sentence << "\n";
+        return false;
+    }
+
+    int service = 0;
+    int status = 0;
+
+    if (!parse_int_field(fields[4], service)) {
+        std::cerr << "Invalid PHTG service field: " << fields[4] << " sentence: " << sentence << "\n";
+        return false;
+    }
+
+    if (!parse_int_field(fields[5], status)) {
+        std::cerr << "Invalid PHTG status field: " << fields[5] << " sentence: " << sentence << "\n";
+        return false;
+    }
+
+    data.date = fields[0];
+    data.time = fields[1];
+    data.constellation = fields[2];
+    data.auth_system = fields[3];
+    data.service = service;
+    data.status = status;
+
+    return true;
 }
 
 static void process_nmea_line(const std::string &line) {
-    if (line.size() >= 5 && line.substr(0, 5) == "$PHTG") {
+    if (line.size() >= 6 && line.substr(0, 6) == "$PHTG,") {
         PHTGData phtg;
         if (parse_phtg(line, phtg)) {
-            gnss_auth_status.store(phtg.auth_result);
-            gnss_warning.store(phtg.warning);
+            gnss_auth_status.store(phtg.service);
+            gnss_warning.store(phtg.status);
+            //
+            // std::cout << "PHTG parsed: " << phtg.date << " " << phtg.time << " constellation=" << phtg.constellation
+            //           << " auth_system=" << phtg.auth_system << " service=" << phtg.service << " status=" <<
+            //           phtg.status
+            //           << "\n";
         }
     }
 }
@@ -156,7 +222,7 @@ enum class HashtagDDOPObjectIDs : std::uint16_t {
     TimePresentation = 52
 };
 
-static constexpr std::uint16_t ELEMENT_NUMBER = 1;
+static constexpr std::uint16_t ELEMENT_NUMBER = 0;
 
 // Proprietary DDI range: 57344..65534
 static constexpr std::uint16_t DDI_AUTH_RESULT = 65432;
@@ -355,11 +421,15 @@ int main(int argc, char **argv) {
     const char *xml_export_filename = filenameee.c_str();
     export_ddop_to_xml(ddop, xml_export_filename);
 
+    int counter = 0;
+
     while (running) {
+        counter++;
         auto a = gnss_auth_status.load();
         auto w = gnss_warning.load();
 
-        if (a != lastAuth) {
+        if (a != lastAuth || counter % 10 == 0) {
+            std::cout << "TC value-change trigger for DDI_AUTH_RESULT, value=" << a << "\n";
             tcClient->on_value_changed_trigger(ELEMENT_NUMBER, DDI_AUTH_RESULT);
             lastAuth = a;
         }
